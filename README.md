@@ -16,3 +16,9 @@ pip install fastapi
 ```
 pip install sqlalchemy psycopg2-binary
 ```
+
+4. run project
+
+```
+fastapi dev main.py
+```
