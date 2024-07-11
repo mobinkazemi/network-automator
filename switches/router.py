@@ -25,7 +25,10 @@ def create(data: CreateSwitchDto, db: Session = Depends(get_db)):
     db.add(switch)
     db.commit()
     db.refresh(switch)
-    return switch
+    return {
+        "message": "درخواست انجام شد",
+        "data": switch
+    }
 
 
 @router.patch('/update/')
@@ -52,4 +55,10 @@ def update(data: UpdateSwitchDto, db: Session = Depends(get_db)):
 
     db.commit()
 
-    return updatedSwitch
+    return {
+        "message": "درخواست انجام شد",
+        "data": {
+            **to_dict(thisSwitch),
+            **dictData,
+        }
+    }
