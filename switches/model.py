@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Table, ForeignKey
 from sqlalchemy.orm import relationship
 from db.database import Base
+from switches.dto.request.createSwitch import CreateSwitchDto
 
 switches_cdp = Table('switches_cdp', Base.metadata,
                      Column('id', Integer, primary_key=True, index=True),
@@ -27,5 +28,15 @@ class Switch(Base):
                        secondaryjoin=id == switches_cdp.c.to_switch_id,
                        backref='connected_from')
 
+    def __init__(self, data: CreateSwitchDto):
+        self.name = data.name
+        self.ip = data.ip
+        self.username = data.username
+        self.password = data.password
+        self.portCount = data.portCount
+        self.model = data.model
+        self.series = data.series
+        self.os = data.os
+
     def __repr__(self):
-        return f"<Switch(id={self.id}, name={self.name}, ip_address={self.ip_address})>"
+        return f"<Switch(id={self.id}, name={self.name}, ip_address={self.ip})>"
