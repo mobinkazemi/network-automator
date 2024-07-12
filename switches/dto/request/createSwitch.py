@@ -1,6 +1,7 @@
-from pydantic import BaseModel, IPvAnyAddress
+from dataclasses import dataclass
+from pydantic import BaseModel
 
-
+@dataclass(frozen=True)
 class CreateSwitchDto(BaseModel):
     name: str
     ip: str
