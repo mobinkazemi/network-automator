@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import delete as sql_delete
 from db.database import get_db
 from shared.dto.response.api_responseDto import  SuccessResponseDto
 from switches.dto.request.deleteSwitch import DeleteSwitchDto
@@ -10,6 +11,8 @@ from switches.dto.request.createSwitch import CreateSwitchDto
 from switches.dto.request.updateSwitch import UpdateSwitchDto
 from shared.functions.to_dict import to_dict
 from shared.functions.validate_ip import isValidIP
+from switches.routers.neighbors_router import delete as delete_neighbors
+from switches.model import switches_cdp
 
 router = APIRouter()
 
@@ -77,6 +80,11 @@ def delete(data: DeleteSwitchDto, db: Session = Depends(get_db)):
 
     if thisSwitch is None:
         raise HTTPException(404, detail='سوییج پیدا نشد')
+
+    db.execute(sql_delete(switches_cdp).where(
+        (switches_cdp.c.from_switch_id == data.id) |
+        (switches_cdp.c.to_switch_id == data.id)
+    ))
 
     db.query(model.Switch).filter(
         model.Switch.id == data.id).delete()
