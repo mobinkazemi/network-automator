@@ -1,16 +1,18 @@
 from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = "postgresql://networkuser:postgresnetwork@localhost/network-automator"
+url = URL.create(
+    drivername="postgresql",
+    username="networkuser",
+    password="postgresnetwork",
+    host="localhost",
+    database="network-automator",
+    port=5432,
+)
 
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+engine = create_engine(url)
+Session = sessionmaker(bind=engine)
+session = Session()
 Base = declarative_base()
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()

@@ -1,14 +1,15 @@
 from sqlalchemy import Column, Integer, String, Table, ForeignKey
 from sqlalchemy.orm import relationship
-from db.database import Base
+from db.database import Base, engine
 from switches.dto.request.createSwitch import CreateSwitchDto
 
-switches_cdp = Table('switches_cdp', Base.metadata,
-                     Column('id', Integer, primary_key=True, index=True),
-                     Column('from_switch_id', Integer,
-                            ForeignKey('switches.id')),
-                     Column('to_switch_id', Integer, ForeignKey('switches.id'))
-                     )
+switches_cdp = Table(
+    "switches_cdp",
+    Base.metadata,
+    Column("id", Integer, primary_key=True, index=True),
+    Column("from_switch_id", Integer, ForeignKey("switches.id")),
+    Column("to_switch_id", Integer, ForeignKey("switches.id")),
+)
 
 
 class Switch(Base):
@@ -23,10 +24,13 @@ class Switch(Base):
     model = Column(String, nullable=True)
     series = Column(String, nullable=True)
     os = Column(String, nullable=True)
-    cdp = relationship('Switch', secondary=switches_cdp,
-                       primaryjoin=id == switches_cdp.c.from_switch_id,
-                       secondaryjoin=id == switches_cdp.c.to_switch_id,
-                       backref='connected_from')
+    cdp = relationship(
+        "Switch",
+        secondary=switches_cdp,
+        primaryjoin=id == switches_cdp.c.from_switch_id,
+        secondaryjoin=id == switches_cdp.c.to_switch_id,
+        backref="connected_from",
+    )
 
     def __init__(self, data: CreateSwitchDto):
         self.name = data.name
@@ -38,5 +42,5 @@ class Switch(Base):
         self.series = data.series
         self.os = data.os
 
-    def __repr__(self):
-        return f"<Switch(id={self.id}, name={self.name}, ip_address={self.ip})>"
+
+Base.metadata.create_all(engine)
