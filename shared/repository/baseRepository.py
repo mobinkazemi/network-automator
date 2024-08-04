@@ -25,6 +25,14 @@ class BaseRepository:
 
         return to_dict(result)
 
+    def findOneRaw(self, id: int):
+        result = self.session.query(self.model).filter(self.model.id == id).first()
+
+        if result is None:
+            return None
+
+        return result
+
     def updateOne(self, id: int, updateData: dict):
         dbData = self.findOne(id)
 

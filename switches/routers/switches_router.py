@@ -86,11 +86,7 @@ def delete(id: int):
     if thisSwitch is None:
         raise HTTPException(404, detail="سوییج پیدا نشد")
 
-    session.execute(
-        sql_delete(switches_cdp).where(
-            (switches_cdp.c.from_switch_id == id) | (switches_cdp.c.to_switch_id == id)
-        )
-    )
+    switchRepo.deleteMeFromCDP(id)
 
     switchRepo.deleteOne(id)
 
