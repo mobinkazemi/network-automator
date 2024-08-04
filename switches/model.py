@@ -11,6 +11,12 @@ switches_cdp = Table(
     Column("to_switch_id", Integer, ForeignKey("switches.id")),
 )
 
+# class Switch_CDP(Base):
+#     __tablename__ = "switches_cdp"
+#     id = Column(Integer, primary_key=True, index=True)
+#     from_switch_id= Column( Integer, ForeignKey("switches.id")),
+#     to_switch_id= Column( Integer, ForeignKey("switches.id")),
+
 
 class Switch(Base):
     __tablename__ = "switches"

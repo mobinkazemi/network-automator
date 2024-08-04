@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import delete as sql_delete
 from shared.dto.response.api_responseDto import SuccessResponseDto
+from shared.functions.sanitize_request_dto import sanitizeRequestData
 from switches.dto.request.deleteSwitch import DeleteSwitchDto
+from switches.repository import SwitchRepository
 from .. import model
 from pydantic import BaseModel
 from switches.dto.request.createSwitch import CreateSwitchDto
@@ -15,11 +17,32 @@ from switches.model import switches_cdp
 from db.database import session
 
 router = APIRouter()
+switchRepo = SwitchRepository()
 
 
 @router.post("/execCommand/", response_model=SuccessResponseDto)
 def execCommand(command: str):
     return {"message": "درخواست اجرا شد", "data": command}
+
+
+@router.get("/info/{id}", response_model=SuccessResponseDto)
+def info(id: int):
+    thisSwitch = switchRepo.findOne(id)
+
+    if thisSwitch is None:
+        raise HTTPException(404, detail="سوییچ پیدا نشد")
+
+    return {"data": thisSwitch}
+
+
+@router.get("/byIP/{ip}", response_model=SuccessResponseDto)
+def byIP(ip: str):
+    thisSwitch = switchRepo.findByIP(ip)
+
+    if thisSwitch is None:
+        raise HTTPException(404, detail="سوییچ پیدا نشد")
+
+    return {"data": thisSwitch}
 
 
 @router.post("/create/", response_model=SuccessResponseDto)
@@ -30,71 +53,45 @@ def create(data: CreateSwitchDto):
     existing_switch = (
         session.query(model.Switch).filter(model.Switch.ip == data.ip).first()
     )
+
     if existing_switch:
         raise HTTPException(409, detail="آی‌پی سوییج تکراری است")
-    switch = model.Switch(data)
-    session.add(switch)
-    session.commit()
-    session.refresh(switch)
-    return {"message": "درخواست انجام شد", "data": to_dict(switch)}
+
+    switch = switchRepo.createOne(data)
+
+    return {"message": "درخواست انجام شد", "data": switch}
 
 
 @router.patch("/update/", response_model=SuccessResponseDto)
 def update(data: UpdateSwitchDto):
-    thisSwitch = session.query(model.Switch).filter(model.Switch.id == data.id).first()
-
+    thisSwitch = switchRepo.findOne(data.id)
     if thisSwitch is None:
         raise HTTPException(404, detail="سوییج پیدا نشد")
 
     if data.ip and isValidIP(data.ip) is not True:
         raise HTTPException(400, detail="آی‌پی سوییج معتبر نیست")
 
-    if (
-        data.ip
-        and session.query(model.Switch)
-        .filter(model.Switch.ip == data.ip, model.Switch.id != data.id)
-        .first()
-    ):
-        raise HTTPException(409, detail="این آی‌پی قبلا برای سوییج دیگری تعریف شده است")
+    if data.ip and switchRepo.findByIP(data.ip):
+        raise HTTPException(409, detail="این آی‌پی قبلا تعریف شده است")
 
-    dictData = data.model_dump()
+    result = switchRepo.updateOne(data.id, sanitizeRequestData(data))
 
-    dictData = {k: v for k, v in dictData.items() if v is not None}
-
-    session.query(model.Switch).filter(model.Switch.id == data.id).update(
-        {
-            **to_dict(thisSwitch),
-            **dictData,
-        }
-    )
-
-    session.commit()
-
-    return {
-        "message": "درخواست انجام شد",
-        "data": {
-            **to_dict(thisSwitch),
-            **dictData,
-        },
-    }
+    return {"data": result}
 
 
-@router.delete("/delete/", response_model=SuccessResponseDto)
-def delete(data: DeleteSwitchDto):
-    thisSwitch = session.query(model.Switch).filter(model.Switch.id == data.id).first()
+@router.delete("/delete/{id}", response_model=SuccessResponseDto)
+def delete(id: int):
+    thisSwitch = switchRepo.findOne(id)
 
     if thisSwitch is None:
         raise HTTPException(404, detail="سوییج پیدا نشد")
 
     session.execute(
         sql_delete(switches_cdp).where(
-            (switches_cdp.c.from_switch_id == data.id)
-            | (switches_cdp.c.to_switch_id == data.id)
+            (switches_cdp.c.from_switch_id == id) | (switches_cdp.c.to_switch_id == id)
         )
     )
 
-    session.query(model.Switch).filter(model.Switch.id == data.id).delete()
-
-    session.commit()
+    switchRepo.deleteOne(id)
 
     return {}
