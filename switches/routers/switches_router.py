@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import delete as sql_delete
 from shared.dto.response.api_responseDto import SuccessResponseDto
 from shared.functions.sanitize_request_dto import sanitizeRequestData
+from switches.dto.request.commandSwitch import CommandSwitchDto
 from switches.dto.request.deleteSwitch import DeleteSwitchDto
 from switches.repository import SwitchRepository
 from .. import model
@@ -21,8 +22,8 @@ switchRepo = SwitchRepository()
 
 
 @router.post("/execCommand/", response_model=SuccessResponseDto)
-def execCommand(command: str):
-    return {"message": "درخواست اجرا شد", "data": command}
+def execCommand(data: CommandSwitchDto):
+    return {"message": "درخواست اجرا شد", "data": data}
 
 
 @router.get("/info/{id}", response_model=SuccessResponseDto)
