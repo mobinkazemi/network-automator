@@ -16,14 +16,36 @@ from shared.functions.validate_ip import isValidIP
 from switches.routers.neighbors_router import delete as delete_neighbors
 from switches.model import switches_cdp
 from db.database import session
-
+import paramiko
 router = APIRouter()
 switchRepo = SwitchRepository()
 
 
 @router.post("/execCommand/", response_model=SuccessResponseDto)
 def execCommand(data: CommandSwitchDto):
-    return {"message": "درخواست اجرا شد", "data": data}
+
+
+
+    # ssh.close()
+
+
+    try:
+        client= paramiko.Transport(("192.168.1.4", 22))
+        client.connect(username="admin", password="admin")
+        ssh = paramiko.SSHClient()
+        ssh._transport = client
+        stdin, stdout, stderr = ssh.exec_command(data.data)
+        output =  stdout.read().decode()
+        client.close()
+        return {"message" : output  , output : "اتصال  موفق"}
+
+    except Exception as e:
+        outputFile = open(f"ERR.txt", 'a+')
+        outputFile.write('\n***********'+'*****************\n')
+        outputFile.write(str(e))
+        outputFile.close()
+        return {"message" : "اتصال نا موفق"}
+    
 
 
 @router.get("/info/{id}", response_model=SuccessResponseDto)
@@ -39,7 +61,7 @@ def info(id: int):
 @router.get("/byIP/{ip}", response_model=SuccessResponseDto)
 def byIP(ip: str):
     thisSwitch = switchRepo.findByIP(ip)
-
+    print("test")
     if thisSwitch is None:
         raise HTTPException(404, detail="سوییچ پیدا نشد")
 
