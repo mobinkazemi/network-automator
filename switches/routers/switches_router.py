@@ -30,7 +30,7 @@ def execCommand(data: CommandSwitchDto):
 
 
     try:
-        client= paramiko.Transport(("192.168.1.4", 22))
+        client= paramiko.Transport(("192.168.1.5", 22))
         client.connect(username="admin", password="admin")
         ssh = paramiko.SSHClient()
         ssh._transport = client
