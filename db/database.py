@@ -5,10 +5,10 @@ from sqlalchemy.orm import sessionmaker
 
 url = URL.create(
     drivername="postgresql",
-    username="maxsusi",
-    password="2783@Rtda",
+    username="networkuser",
+    password="postgresnetwork",
     host="localhost",
-    database="maxsusi",
+    database="network-automator",
     port=5432,
 )
 

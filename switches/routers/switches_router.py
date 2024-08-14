@@ -17,6 +17,7 @@ from switches.routers.neighbors_router import delete as delete_neighbors
 from switches.model import switches_cdp
 from db.database import session
 import paramiko
+
 router = APIRouter()
 switchRepo = SwitchRepository()
 
@@ -24,28 +25,24 @@ switchRepo = SwitchRepository()
 @router.post("/execCommand/", response_model=SuccessResponseDto)
 def execCommand(data: CommandSwitchDto):
 
-
-
     # ssh.close()
 
-
     try:
-        client= paramiko.Transport(("192.168.1.5", 22))
+        client = paramiko.Transport(("192.168.1.5", 22))
         client.connect(username="admin", password="admin")
         ssh = paramiko.SSHClient()
         ssh._transport = client
         stdin, stdout, stderr = ssh.exec_command(data.data)
-        output =  stdout.read().decode()
+        output = stdout.read().decode()
         client.close()
-        return {"message" : output  , output : "اتصال  موفق"}
+        return {"message": output, output: "اتصال  موفق"}
 
     except Exception as e:
-        outputFile = open(f"ERR.txt", 'a+')
-        outputFile.write('\n***********'+'*****************\n')
+        outputFile = open(f"ERR.txt", "a+")
+        outputFile.write("\n***********" + "*****************\n")
         outputFile.write(str(e))
         outputFile.close()
-        return {"message" : "اتصال نا موفق"}
-    
+        return {"message": "اتصال نا موفق"}
 
 
 @router.get("/info/{id}", response_model=SuccessResponseDto)
@@ -114,3 +111,10 @@ def delete(id: int):
     switchRepo.deleteOne(id)
 
     return {}
+
+
+@router.get("/list", response_model=SuccessResponseDto)
+def findAll():
+    switchesList = switchRepo.findAll()
+
+    return {"data": switchesList}

@@ -47,3 +47,18 @@ class BaseRepository:
     def deleteOne(self, id: int):
         self.session.query(self.model).filter(self.model.id == id).delete()
         session.commit()
+
+    def findAll(self):
+        query = select(self.model).order_by(self.model.id)
+        rawResult = self.session.execute(query)
+
+        records = rawResult.scalars().all()
+
+        result = [record.__dict__ for record in records]
+
+        # remove internal state from the dict
+        for item in result:
+            item.pop("_sa_instance_state", None)
+
+        return result
+        return []
