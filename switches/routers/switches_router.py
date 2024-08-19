@@ -6,6 +6,7 @@ from shared.dto.response.api_responseDto import SuccessResponseDto
 from shared.functions.sanitize_request_dto import sanitizeRequestData
 from switches.dto.request.commandSwitch import CommandSwitchDto
 from switches.dto.request.deleteSwitch import DeleteSwitchDto
+from switches.functions.check_connection import check_ssh_connection
 from switches.repository import SwitchRepository
 from .. import model
 from pydantic import BaseModel
@@ -25,7 +26,7 @@ switchRepo = SwitchRepository()
 @router.post("/execCommand/", response_model=SuccessResponseDto)
 def execCommand(data: CommandSwitchDto):
 
-    # ssh.close()
+    ##### ssh.close()
 
     try:
         client = paramiko.Transport(("192.168.1.5", 22))
@@ -43,6 +44,20 @@ def execCommand(data: CommandSwitchDto):
         outputFile.write(str(e))
         outputFile.close()
         return {"message": "اتصال نا موفق"}
+
+
+@router.get("/checkConnectionStatus", response_model=SuccessResponseDto)
+def checkConnectionStatus():
+
+    allSwitches = switchRepo.findAll()
+
+    finalResult = []
+
+    for sw in allSwitches:
+        result = check_ssh_connection(sw)
+        finalResult.append({"id": sw["id"], "result": result})
+
+    return {"data": finalResult, "message": "درخواست انجام شد"}
 
 
 @router.get("/info/{id}", response_model=SuccessResponseDto)
