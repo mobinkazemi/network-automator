@@ -23,39 +23,45 @@ router = APIRouter()
 switchRepo = SwitchRepository()
 
 
-@router.post("/execCommand/", response_model=SuccessResponseDto)
+@router.post("/execCommand", response_model=SuccessResponseDto)
 def execCommand(data: CommandSwitchDto):
+    # if data.data == "A":
+    #     raise HTTPException(412, detail="اتصال به سوییچ ناموفق بود")
+    # else:
+    #     return {"data": {"stdout": data.data, "stderr": 2}}
 
-    ##### ssh.close()
+    thisSwitch = switchRepo.findOne(data.switchId)
+
+    if not thisSwitch:
+        raise HTTPException(404, detail="سوییچ پیدا نشد")
 
     try:
-        client = paramiko.Transport(("192.168.1.5", 22))
-        client.connect(username="admin", password="admin")
+        client = paramiko.Transport((thisSwitch["ip"], 22))
+        client.connect(username=thisSwitch["username"], password=thisSwitch["password"])
         ssh = paramiko.SSHClient()
         ssh._transport = client
         stdin, stdout, stderr = ssh.exec_command(data.data)
-        output = stdout.read().decode()
+        resultOutput = stdout.read().decode()
+        resultError = stderr.read().decode()
         client.close()
-        return {"message": output, output: "اتصال  موفق"}
+        return {
+            "message": "درخواست انجام شد",
+            "data": {"stdout": resultOutput, "stderr": resultError},
+        }
 
     except Exception as e:
-        outputFile = open(f"ERR.txt", "a+")
-        outputFile.write("\n***********" + "*****************\n")
-        outputFile.write(str(e))
-        outputFile.close()
-        return {"message": "اتصال نا موفق"}
+        raise HTTPException(412, detail="اتصال به سوییچ ناموفق بود")
 
 
 @router.get("/checkConnectionStatus", response_model=SuccessResponseDto)
 def checkConnectionStatus():
 
     allSwitches = switchRepo.findAll()
-
     finalResult = []
 
     for sw in allSwitches:
         result = check_ssh_connection(sw)
-        finalResult.append({"id": sw["id"], "result": result})
+        finalResult.append({"id": sw["id"], "result": not result})
 
     return {"data": finalResult, "message": "درخواست انجام شد"}
 
@@ -80,7 +86,7 @@ def byIP(ip: str):
     return {"data": thisSwitch}
 
 
-@router.post("/create/", response_model=SuccessResponseDto)
+@router.post("/create", response_model=SuccessResponseDto)
 def create(data: CreateSwitchDto):
     if isValidIP(data.ip) is not True:
         raise HTTPException(400, detail="آی‌پی سوییج معتبر نیست")
