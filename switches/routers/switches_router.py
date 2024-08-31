@@ -99,7 +99,7 @@ def checkConnectionStatus():
 
     for sw in allSwitches:
         result = check_ssh_connection(sw)
-        finalResult.append({"id": sw["id"], "result": not result})
+        finalResult.append({"id": sw["id"], "result": result})
 
     return {"data": finalResult, "message": "درخواست انجام شد"}
 
