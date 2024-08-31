@@ -1,56 +1,94 @@
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
-from sqlalchemy import delete as sql_delete
+from shared.classes.Session_Manager import SessionManager
 from shared.dto.response.api_responseDto import SuccessResponseDto
+from shared.functions.get_client_id import getClientId
 from shared.functions.sanitize_request_dto import sanitizeRequestData
 from switches.dto.request.commandSwitch import CommandSwitchDto
-from switches.dto.request.deleteSwitch import DeleteSwitchDto
 from switches.functions.check_connection import check_ssh_connection
 from switches.repository import SwitchRepository
 from .. import model
-from pydantic import BaseModel
 from switches.dto.request.createSwitch import CreateSwitchDto
 from switches.dto.request.updateSwitch import UpdateSwitchDto
-from shared.functions.to_dict import to_dict
 from shared.functions.validate_ip import isValidIP
-from switches.routers.neighbors_router import delete as delete_neighbors
-from switches.model import switches_cdp
 from db.database import session
 import paramiko
 
+
 router = APIRouter()
 switchRepo = SwitchRepository()
+sessionManager = SessionManager()
+
+# @router.post("/execCommand", response_model=SuccessResponseDto)
+# def execCommand(req: Request, data: CommandSwitchDto):
+#     # if data.data == "A":
+#     #     raise HTTPException(412, detail="اتصال به سوییچ ناموفق بود")
+#     # else:
+#     #     return {"data": {"stdout": data.data, "stderr": 2}}
+
+#     thisSwitch = switchRepo.findOne(data.switchId)
+
+#     if not thisSwitch:
+#         raise HTTPException(404, detail="سوییچ پیدا نشد")
+
+#     try:
+#         client = paramiko.Transport((thisSwitch["ip"], 22))
+#         client.connect(username=thisSwitch["username"], password=thisSwitch["password"])
+#         ssh = paramiko.SSHClient()
+#         ssh._transport = client
+#         stdin, stdout, stderr = ssh.exec_command(data.data)
+#         resultOutput = stdout.read().decode()
+#         resultError = stderr.read().decode()
+#         client.close()
+#         return {
+#             "message": "درخواست انجام شد",
+#             "data": {"stdout": resultOutput, "stderr": resultError},
+#         }
+
+#     except Exception as e:
+#         raise HTTPException(412, detail="اتصال به سوییچ ناموفق بود")
 
 
 @router.post("/execCommand", response_model=SuccessResponseDto)
-def execCommand(data: CommandSwitchDto):
+def execCommand(req: Request, data: CommandSwitchDto):
     # if data.data == "A":
     #     raise HTTPException(412, detail="اتصال به سوییچ ناموفق بود")
     # else:
     #     return {"data": {"stdout": data.data, "stderr": 2}}
 
     thisSwitch = switchRepo.findOne(data.switchId)
-
     if not thisSwitch:
         raise HTTPException(404, detail="سوییچ پیدا نشد")
 
-    try:
-        client = paramiko.Transport((thisSwitch["ip"], 22))
-        client.connect(username=thisSwitch["username"], password=thisSwitch["password"])
-        ssh = paramiko.SSHClient()
-        ssh._transport = client
-        stdin, stdout, stderr = ssh.exec_command(data.data)
-        resultOutput = stdout.read().decode()
-        resultError = stderr.read().decode()
-        client.close()
-        return {
-            "message": "درخواست انجام شد",
-            "data": {"stdout": resultOutput, "stderr": resultError},
-        }
+    clientId = getClientId(req)
+    if not clientId:
+        raise HTTPException(412, detail="شناسه کلاینت دریافت نشد")
 
-    except Exception as e:
-        raise HTTPException(412, detail="اتصال به سوییچ ناموفق بود")
+    sessionKey = sessionManager.getKey(
+        clientId=clientId, deviceId=thisSwitch["id"], deviceType="switch"
+    )
+
+    if not sessionManager.hasClient(sessionKey):
+        try:
+            client = paramiko.Transport((thisSwitch["ip"], 22))
+            client.connect(
+                username=thisSwitch["username"], password=thisSwitch["password"]
+            )
+            ssh = paramiko.SSHClient()
+            ssh._transport = client
+
+        except Exception as e:
+            raise HTTPException(412, detail="اتصال به سوییچ ناموفق بود")
+
+        sessionManager.setClient(sessionKey, ssh)
+
+    thisSession = sessionManager.getClient(sessionKey)
+    stdin, stdout, stderr = thisSession.exec_command(data.data)
+    resultOutput = stdout.read().decode()
+    resultError = stderr.read().decode()
+    return {
+        "message": "درخواست انجام شد",
+        "data": {"stdout": resultOutput, "stderr": resultError},
+    }
 
 
 @router.get("/checkConnectionStatus", response_model=SuccessResponseDto)
@@ -61,7 +99,7 @@ def checkConnectionStatus():
 
     for sw in allSwitches:
         result = check_ssh_connection(sw)
-        finalResult.append({"id": sw["id"], "result": result})
+        finalResult.append({"id": sw["id"], "result": not result})
 
     return {"data": finalResult, "message": "درخواست انجام شد"}
 
@@ -135,7 +173,7 @@ def delete(id: int):
 
 
 @router.get("/list", response_model=SuccessResponseDto)
-def findAll():
+def findAll(req: Request):
     switchesList = switchRepo.findAll()
-
+    print(req.headers.get("clientId"))
     return {"data": switchesList}
