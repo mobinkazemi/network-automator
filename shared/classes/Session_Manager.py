@@ -4,7 +4,7 @@ import paramiko
 
 
 class SessionManager:
-    clients: List[Tuple[str, paramiko.SSHClient]] = []
+    clients: List[Tuple[str, paramiko.Channel]] = []
 
     def getKey(
         self,
@@ -14,10 +14,10 @@ class SessionManager:
     ) -> str:
         return str(f"{deviceType.upper()}_{deviceId}:{clientId}")
 
-    def setClient(self, key: str, client: paramiko.SSHClient):
+    def setClient(self, key: str, client: paramiko.Channel):
         self.clients.append((key, client))
 
-    def getClient(self, key: str) -> paramiko.SSHClient:
+    def getClient(self, key: str) -> paramiko.Channel:
         for k, client in self.clients:
             if k == key:
                 return client
