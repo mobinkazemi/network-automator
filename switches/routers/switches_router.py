@@ -12,40 +12,12 @@ from switches.dto.request.updateSwitch import UpdateSwitchDto
 from shared.functions.validate_ip import isValidIP
 from db.database import session
 import paramiko
+import asyncio
 
 
 router = APIRouter()
 switchRepo = SwitchRepository()
 sessionManager = SessionManager()
-
-# @router.post("/execCommand", response_model=SuccessResponseDto)
-# def execCommand(req: Request, data: CommandSwitchDto):
-#     # if data.data == "A":
-#     #     raise HTTPException(412, detail="اتصال به سوییچ ناموفق بود")
-#     # else:
-#     #     return {"data": {"stdout": data.data, "stderr": 2}}
-
-#     thisSwitch = switchRepo.findOne(data.switchId)
-
-#     if not thisSwitch:
-#         raise HTTPException(404, detail="سوییچ پیدا نشد")
-
-#     try:
-#         client = paramiko.Transport((thisSwitch["ip"], 22))
-#         client.connect(username=thisSwitch["username"], password=thisSwitch["password"])
-#         ssh = paramiko.SSHClient()
-#         ssh._transport = client
-#         stdin, stdout, stderr = ssh.exec_command(data.data)
-#         resultOutput = stdout.read().decode()
-#         resultError = stderr.read().decode()
-#         client.close()
-#         return {
-#             "message": "درخواست انجام شد",
-#             "data": {"stdout": resultOutput, "stderr": resultError},
-#         }
-
-#     except Exception as e:
-#         raise HTTPException(412, detail="اتصال به سوییچ ناموفق بود")
 
 
 @router.post("/execCommand", response_model=SuccessResponseDto)
@@ -92,14 +64,20 @@ def execCommand(req: Request, data: CommandSwitchDto):
 
 
 @router.get("/checkConnectionStatus", response_model=SuccessResponseDto)
-def checkConnectionStatus():
-
-    allSwitches = switchRepo.findAll()
+async def checkConnectionStatus():
+    tasks = []
     finalResult = []
+    batch_size = 10  # number of tasks per batch
+    ttl = 10  # seconds
+    allSwitches = switchRepo.findAll()
 
     for sw in allSwitches:
-        result = check_ssh_connection(sw)
-        finalResult.append({"id": sw["id"], "result": result})
+        tasks.append(asyncio.create_task(check_ssh_connection(sw, ttl)))
+
+    tasks = [tasks[i : i + batch_size] for i in range(0, len(tasks), batch_size)]
+    for i in range(len(tasks)):
+        thisResults = await asyncio.gather(*tasks[i])
+        finalResult.extend(thisResults)
 
     return {"data": finalResult, "message": "درخواست انجام شد"}
 
