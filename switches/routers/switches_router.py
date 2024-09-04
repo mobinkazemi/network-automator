@@ -150,7 +150,8 @@ def update(data: UpdateSwitchDto):
     if data.ip and isValidIP(data.ip) is not True:
         raise HTTPException(400, detail="آی‌پی سوییج معتبر نیست")
 
-    if data.ip and switchRepo.findByIP(data.ip):
+    switchWithThisIp = switchRepo.findByIP(data.ip)
+    if data.ip and switchWithThisIp and switchWithThisIp["id"] != data.id:
         raise HTTPException(409, detail="این آی‌پی قبلا تعریف شده است")
 
     result = switchRepo.updateOne(data.id, sanitizeRequestData(data))
