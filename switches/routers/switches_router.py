@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
+from auth.functions.get_user_or_error import get_user_or_error
 from shared.classes.Session_Manager import SessionManager
 from shared.dto.response.api_responseDto import SuccessResponseDto
 from shared.functions.get_client_id import getClientId
@@ -103,7 +104,7 @@ def byIP(ip: str):
 
 
 @router.post("/create", response_model=SuccessResponseDto)
-def create(data: CreateSwitchDto):
+def create(data: CreateSwitchDto, payload: dict = Depends(get_user_or_error)):
     if isValidIP(data.ip) is not True:
         raise HTTPException(400, detail="آی‌پی سوییج معتبر نیست")
 

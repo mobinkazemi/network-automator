@@ -11,6 +11,7 @@ class BaseRepository:
         self.session: Session = session
 
     def createOne(self, data: dict) -> dict:
+        print(data)
         instance = self.model(data)
         self.session.add(instance)
         self.session.commit()
