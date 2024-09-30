@@ -13,7 +13,6 @@ userRepo = UserRepository()
 
 @router.post("/login", response_model=SuccessResponseDto)
 def login(data: LoginDto):
-    breakpoint()
     user = userRepo.findByUsername(data.username)
 
     if user is None:

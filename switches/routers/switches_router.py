@@ -22,7 +22,9 @@ sessionManager = SessionManager()
 
 
 @router.post("/execCommand", response_model=SuccessResponseDto)
-def execCommand(req: Request, data: CommandSwitchDto):
+def execCommand(
+    req: Request, data: CommandSwitchDto, payload: dict = Depends(get_user_or_error)
+):
     # if data.data == "A":
     #     raise HTTPException(412, detail="اتصال به سوییچ ناموفق بود")
     # else:
@@ -65,7 +67,7 @@ def execCommand(req: Request, data: CommandSwitchDto):
 
 
 @router.get("/checkConnectionStatus", response_model=SuccessResponseDto)
-async def checkConnectionStatus():
+async def checkConnectionStatus(payload: dict = Depends(get_user_or_error)):
     tasks = []
     finalResult = []
     batch_size = 10  # number of tasks per batch
@@ -84,7 +86,10 @@ async def checkConnectionStatus():
 
 
 @router.get("/info/{id}", response_model=SuccessResponseDto)
-def info(id: int):
+def info(
+    id: int,
+    payload: dict = Depends(get_user_or_error),
+):
     thisSwitch = switchRepo.findOne(id)
 
     if thisSwitch is None:
@@ -94,7 +99,7 @@ def info(id: int):
 
 
 @router.get("/byIP/{ip}", response_model=SuccessResponseDto)
-def byIP(ip: str):
+def byIP(ip: str, payload: dict = Depends(get_user_or_error)):
     thisSwitch = switchRepo.findByIP(ip)
     print("test")
     if thisSwitch is None:
@@ -121,7 +126,7 @@ def create(data: CreateSwitchDto, payload: dict = Depends(get_user_or_error)):
 
 
 @router.patch("/update/", response_model=SuccessResponseDto)
-def update(data: UpdateSwitchDto):
+def update(data: UpdateSwitchDto, payload: dict = Depends(get_user_or_error)):
     thisSwitch = switchRepo.findOne(data.id)
     if thisSwitch is None:
         raise HTTPException(404, detail="سوییج پیدا نشد")
@@ -139,7 +144,7 @@ def update(data: UpdateSwitchDto):
 
 
 @router.delete("/delete/{id}", response_model=SuccessResponseDto)
-def delete(id: int):
+def delete(id: int, payload: dict = Depends(get_user_or_error)):
     thisSwitch = switchRepo.findOne(id)
 
     if thisSwitch is None:
@@ -153,7 +158,7 @@ def delete(id: int):
 
 
 @router.get("/list", response_model=SuccessResponseDto)
-def findAll(req: Request):
+def findAll(req: Request, payload: dict = Depends(get_user_or_error)):
     switchesList = switchRepo.findAll()
     print(req.headers.get("clientId"))
     return {"data": switchesList}
