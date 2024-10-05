@@ -36,10 +36,10 @@ def register(data: RegisterDto):
     user = userRepo.findByUsername(data.username)
 
     if user:
-        raise HTTPException(401, detail="نام کاربری تکراری است")
+        raise HTTPException(400, detail="نام کاربری تکراری است")
 
     if len(data.password) < 4:
-        raise HTTPException(401, detail="رمز عبور باید حداقل 4 کاراکتر باشد")
+        raise HTTPException(400, detail="رمز عبور باید حداقل 4 کاراکتر باشد")
 
     data.password = hash_password(data.password)
 
