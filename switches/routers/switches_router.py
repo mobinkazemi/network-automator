@@ -6,10 +6,13 @@ from shared.functions.get_client_id import getClientId
 from shared.functions.sanitize_request_dto import sanitizeRequestData
 from switches.dto.request.commandSwitch import CommandSwitchDto
 from switches.functions.check_connection import check_ssh_connection
+from switches.functions.check_connection import checkHardening
+from switches.functions.hardeningCheckList import hardeningCheckList
 from switches.repository import SwitchRepository
 from .. import model
 from switches.dto.request.createSwitch import CreateSwitchDto
 from switches.dto.request.updateSwitch import UpdateSwitchDto
+from switches.dto.request.checkHardening import checkHardeningDto
 from shared.functions.validate_ip import isValidIP
 from db.database import session
 import paramiko
@@ -71,7 +74,7 @@ async def checkConnectionStatus(payload: dict = Depends(get_user_or_error)):
     tasks = []
     finalResult = []
     batch_size = 10  # number of tasks per batch
-    ttl = 10  # seconds
+    ttl = 2  # seconds
     allSwitches = switchRepo.findAll()
 
     for sw in allSwitches:
@@ -162,3 +165,46 @@ def findAll(req: Request, payload: dict = Depends(get_user_or_error)):
     switchesList = switchRepo.findAll()
     print(req.headers.get("clientId"))
     return {"data": switchesList}
+
+
+@router.get("/checkHardening", response_model=SuccessResponseDto)
+def findAll(req: Request, data: checkHardeningDto, payload: dict = Depends(get_user_or_error)):
+    thisSwitch = switchRepo.findOne(data.id)
+    if not thisSwitch:
+        raise HTTPException(404, detail="سوییچ پیدا نشد")
+
+    clientId = getClientId(req)
+    if not clientId:
+        raise HTTPException(412, detail="شناسه کلاینت دریافت نشد")
+
+    sessionKey = sessionManager.getKey(
+        clientId=clientId, deviceId=thisSwitch["id"], deviceType="switch"
+    )
+
+    if not sessionManager.hasClient(sessionKey):
+        try:
+            # client = paramiko.Transport((thisSwitch["ip"], 22))
+            # client.connect(
+            #     username=thisSwitch["username"], password=thisSwitch["password"]
+            # )
+            # ssh = paramiko.SSHClient()
+            # ssh._transport = client
+            client = paramiko.client.SSHClient()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.connect(thisSwitch["ip"], username=thisSwitch["username"], password=thisSwitch["password"])
+
+        except Exception as e:
+            raise HTTPException(412, detail="اتصال به سوییچ ناموفق بود")
+    
+        # sessionManager.setClient(sessionKey, ssh)
+    for audit in hardeningCheckList:
+        command = audit["command"]
+        thisSession = sessionManager.getClient(sessionKey)
+        stdin, stdout,stderr = client.exec_command(command)
+        # resultOutput = resultOutput.append(stdout.read().decode())
+        # resultError = stderr.read().decode()
+        print()
+    return {
+        "message": "درخواست انجام شد",
+        "data": {"stdout": "resultOutput", "stderr": "resultError"},
+    }
