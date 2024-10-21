@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from auth.functions.get_user_or_error import get_user_or_error
+from hardening.repository import HardeningRepository
 from shared.classes.Session_Manager import SessionManager
 from shared.dto.response.api_responseDto import SuccessResponseDto
 from shared.functions.get_client_id import getClientId
@@ -20,6 +21,7 @@ import time
 
 router = APIRouter()
 switchRepo = SwitchRepository()
+hardeningRepo = HardeningRepository()
 sessionManager = SessionManager()
 
 
@@ -166,11 +168,9 @@ def findAll(req: Request, payload: dict = Depends(get_user_or_error)):
     return {"data": switchesList}
 
 
-@router.get("/checkHardening", response_model=SuccessResponseDto)
-def checkHardening(
-    req: Request, data: checkHardeningDto, payload: dict = Depends(get_user_or_error)
-):
-    thisSwitch = switchRepo.findById(data.id)
+@router.get("/checkHardening/{id}", response_model=SuccessResponseDto)
+def checkHardening(id: int, req: Request, payload: dict = Depends(get_user_or_error)):
+    thisSwitch = switchRepo.findById(id)
     if not thisSwitch:
         raise HTTPException(404, detail="سوییچ پیدا نشد")
 
@@ -202,3 +202,18 @@ def checkHardening(
         "message": "درخواست انجام شد",
         "data": {"stdout": commandsOutput, "stderr": "resultError"},
     }
+
+
+@router.get("/checkHardening2/{id}", response_model=SuccessResponseDto)
+def checkHardening2(id: int, req: Request, payload: dict = Depends(get_user_or_error)):
+    hardeningList = hardeningRepo.findAll()
+
+    outputData = []
+    counter = 0
+    for item in hardeningList:
+        outputData.append(
+            {"id": item["id"], "title": item["title"], "status": not counter % 5 == 0}
+        )
+        counter += 1
+
+    return {"data": outputData}
