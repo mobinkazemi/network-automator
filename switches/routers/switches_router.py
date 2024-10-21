@@ -168,7 +168,9 @@ def findAll(req: Request, payload: dict = Depends(get_user_or_error)):
 
 
 @router.get("/checkHardening", response_model=SuccessResponseDto)
-def findAll(req: Request, data: checkHardeningDto, payload: dict = Depends(get_user_or_error)):
+def checkHardening(
+    req: Request, data: checkHardeningDto, payload: dict = Depends(get_user_or_error)
+):
     thisSwitch = switchRepo.findOne(data.id)
     if not thisSwitch:
         raise HTTPException(404, detail="سوییچ پیدا نشد")
@@ -180,19 +182,19 @@ def findAll(req: Request, data: checkHardeningDto, payload: dict = Depends(get_u
     sessionKey = sessionManager.getKey(
         clientId=clientId, deviceId=thisSwitch["id"], deviceType="switch"
     )
-    
-
 
     if not sessionManager.hasClient(sessionKey):
         try:
-            commandsOutput = run_multiple_commands_separately(thisSwitch["ip"], username=thisSwitch["username"], password=thisSwitch["password"])
+            commandsOutput = run_multiple_commands_separately(
+                thisSwitch["ip"],
+                username=thisSwitch["username"],
+                password=thisSwitch["password"],
+            )
         except Exception as e:
             raise HTTPException(412, detail="اتصال به سوییچ ناموفق بود")
-    
 
     # thisSession = sessionManager.getClient(sessionKey)
-    
-    
+
     time.sleep(5)
 
     # resultError = stderr.read().decode()
