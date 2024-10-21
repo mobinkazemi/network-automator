@@ -61,6 +61,7 @@ def run_cisco_command(host, username, password, command):
                 time.sleep(1) 
             channel.close()
             ssh_client.close()
+            print(output)
             return output
 
         except paramiko.ssh_exception.SSHException as ssh_err:
