@@ -6,7 +6,7 @@ from shared.functions.get_client_id import getClientId
 from shared.functions.sanitize_request_dto import sanitizeRequestData
 from switches.dto.request.commandSwitch import CommandSwitchDto
 from switches.functions.check_connection import check_ssh_connection
-from switches.functions.check_connection import checkHardening
+from switches.functions.check_connection import run_multiple_commands_separately
 from switches.functions.hardeningCheckList import hardeningCheckList
 from switches.repository import SwitchRepository
 from .. import model
@@ -17,7 +17,7 @@ from shared.functions.validate_ip import isValidIP
 from db.database import session
 import paramiko
 import asyncio
-
+import time
 
 router = APIRouter()
 switchRepo = SwitchRepository()
@@ -180,31 +180,24 @@ def findAll(req: Request, data: checkHardeningDto, payload: dict = Depends(get_u
     sessionKey = sessionManager.getKey(
         clientId=clientId, deviceId=thisSwitch["id"], deviceType="switch"
     )
+    
+
 
     if not sessionManager.hasClient(sessionKey):
         try:
-            # client = paramiko.Transport((thisSwitch["ip"], 22))
-            # client.connect(
-            #     username=thisSwitch["username"], password=thisSwitch["password"]
-            # )
-            # ssh = paramiko.SSHClient()
-            # ssh._transport = client
-            client = paramiko.client.SSHClient()
-            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            client.connect(thisSwitch["ip"], username=thisSwitch["username"], password=thisSwitch["password"])
-
+            commandsOutput = run_multiple_commands_separately(thisSwitch["ip"], username=thisSwitch["username"], password=thisSwitch["password"])
         except Exception as e:
             raise HTTPException(412, detail="اتصال به سوییچ ناموفق بود")
     
-        # sessionManager.setClient(sessionKey, ssh)
-    for audit in hardeningCheckList:
-        command = audit["command"]
-        thisSession = sessionManager.getClient(sessionKey)
-        stdin, stdout,stderr = client.exec_command(command)
-        # resultOutput = resultOutput.append(stdout.read().decode())
-        # resultError = stderr.read().decode()
-        print()
+
+    # thisSession = sessionManager.getClient(sessionKey)
+    
+    
+    time.sleep(5)
+
+    # resultError = stderr.read().decode()
+
     return {
         "message": "درخواست انجام شد",
-        "data": {"stdout": "resultOutput", "stderr": "resultError"},
+        "data": {"stdout": commandsOutput, "stderr": "resultError"},
     }
