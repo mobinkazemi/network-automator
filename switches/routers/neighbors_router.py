@@ -12,14 +12,14 @@ switchRepo = SwitchRepository()
 
 @router.post("/create/", response_model=SuccessResponseDto)
 def create(data: AddNeighborSwitchDto):
-    firstSwitch = switchRepo.findOne(data.from_id)
+    firstSwitch = switchRepo.findById(data.from_id)
 
     if firstSwitch is None:
         raise HTTPException(
             404, detail="سوییچ با آیدی {} پیدا نشد".format(data.from_id)
         )
 
-    secondSwitch = switchRepo.findOne(data.to_id)
+    secondSwitch = switchRepo.findById(data.to_id)
 
     if secondSwitch is None:
         raise HTTPException(404, detail="سوییچ با آیدی {} پیدا نشد".format(data.to_id))
@@ -31,14 +31,14 @@ def create(data: AddNeighborSwitchDto):
 
 @router.delete("/delete/", response_model=SuccessResponseDto)
 def delete(data: AddNeighborSwitchDto):
-    firstSwitch = switchRepo.findOne(data.from_id)
+    firstSwitch = switchRepo.findById(data.from_id)
 
     if firstSwitch is None:
         raise HTTPException(
             404, detail="سوییچ با آیدی {} پیدا نشد".format(data.from_id)
         )
 
-    secondSwitch = switchRepo.findOne(data.to_id)
+    secondSwitch = switchRepo.findById(data.to_id)
 
     if secondSwitch is None:
         raise HTTPException(404, detail="سوییچ با آیدی {} پیدا نشد".format(data.to_id))

@@ -3,6 +3,8 @@ from router import routes as api_router
 from db.database import engine, Base
 from fastapi.middleware.cors import CORSMiddleware
 
+from seeder.seeder import seeder
+
 app = FastAPI()
 
 app.add_middleware(
@@ -14,3 +16,5 @@ app.add_middleware(
 )
 Base.metadata.create_all(bind=engine)
 app.include_router(api_router)
+
+seeder()

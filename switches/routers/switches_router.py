@@ -7,7 +7,6 @@ from shared.functions.sanitize_request_dto import sanitizeRequestData
 from switches.dto.request.commandSwitch import CommandSwitchDto
 from switches.functions.check_connection import check_ssh_connection
 from switches.functions.check_connection import run_multiple_commands_separately
-from switches.functions.hardeningCheckList import hardeningCheckList
 from switches.repository import SwitchRepository
 from .. import model
 from switches.dto.request.createSwitch import CreateSwitchDto
@@ -33,7 +32,7 @@ def execCommand(
     # else:
     #     return {"data": {"stdout": data.data, "stderr": 2}}
 
-    thisSwitch = switchRepo.findOne(data.switchId)
+    thisSwitch = switchRepo.findById(data.switchId)
     if not thisSwitch:
         raise HTTPException(404, detail="سوییچ پیدا نشد")
 
@@ -93,7 +92,7 @@ def info(
     id: int,
     payload: dict = Depends(get_user_or_error),
 ):
-    thisSwitch = switchRepo.findOne(id)
+    thisSwitch = switchRepo.findById(id)
 
     if thisSwitch is None:
         raise HTTPException(404, detail="سوییچ پیدا نشد")
@@ -130,7 +129,7 @@ def create(data: CreateSwitchDto, payload: dict = Depends(get_user_or_error)):
 
 @router.patch("/update/", response_model=SuccessResponseDto)
 def update(data: UpdateSwitchDto, payload: dict = Depends(get_user_or_error)):
-    thisSwitch = switchRepo.findOne(data.id)
+    thisSwitch = switchRepo.findById(data.id)
     if thisSwitch is None:
         raise HTTPException(404, detail="سوییج پیدا نشد")
 
@@ -148,7 +147,7 @@ def update(data: UpdateSwitchDto, payload: dict = Depends(get_user_or_error)):
 
 @router.delete("/delete/{id}", response_model=SuccessResponseDto)
 def delete(id: int, payload: dict = Depends(get_user_or_error)):
-    thisSwitch = switchRepo.findOne(id)
+    thisSwitch = switchRepo.findById(id)
 
     if thisSwitch is None:
         raise HTTPException(404, detail="سوییج پیدا نشد")
@@ -171,7 +170,7 @@ def findAll(req: Request, payload: dict = Depends(get_user_or_error)):
 def checkHardening(
     req: Request, data: checkHardeningDto, payload: dict = Depends(get_user_or_error)
 ):
-    thisSwitch = switchRepo.findOne(data.id)
+    thisSwitch = switchRepo.findById(data.id)
     if not thisSwitch:
         raise HTTPException(404, detail="سوییچ پیدا نشد")
 

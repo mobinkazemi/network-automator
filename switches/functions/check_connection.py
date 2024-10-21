@@ -1,9 +1,10 @@
 import asyncio
 import time
 import paramiko
-import re
 from switches.model import Switch
-from switches.functions.hardeningCheckList import hardeningCheckList
+from hardening.hardeningCheckList import hardeningCheckList
+
+
 async def check_ssh_connection(data: Switch, ttl: int) -> bool:
     try:
         return await asyncio.wait_for(_connect_with_timeout(data), timeout=ttl)
@@ -31,54 +32,63 @@ def _connect_ssh(data: Switch, second_try: bool = False) -> bool:
     except Exception as e:
         return {"id": data["id"], "result": False}
 
+
 def run_cisco_command(host, username, password, command):
-        try:
+    try:
 
-            ssh_client = paramiko.SSHClient()
-            ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh_client = paramiko.SSHClient()
+        ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-            ssh_client.connect(hostname=host, username=username, password=password, allow_agent=False, look_for_keys=False, timeout=10)
+        ssh_client.connect(
+            hostname=host,
+            username=username,
+            password=password,
+            allow_agent=False,
+            look_for_keys=False,
+            timeout=10,
+        )
 
+        ssh_client.get_transport().set_keepalive(30)
 
-            ssh_client.get_transport().set_keepalive(30)
+        channel = ssh_client.invoke_shell()
+        time.sleep(1)
 
-            channel = ssh_client.invoke_shell()
-            time.sleep(1)  
+        if channel.recv_ready():
+            channel.recv(65535)
 
-
+        print(f"Running command: {command}")
+        channel.send(command + "\n")
+        time.sleep(1)
+        output = ""
+        while True:
             if channel.recv_ready():
-                channel.recv(65535)
+                output = channel.recv(65535).decode("utf-8")
+            else:
+                break
+            time.sleep(1)
+        channel.close()
+        ssh_client.close()
+        print(output)
+        return output
 
-            print(f"Running command: {command}")
-            channel.send(command + "\n")
-            time.sleep(1)  
-            output = ""
-            while True:
-                if channel.recv_ready():
-                    output = channel.recv(65535).decode('utf-8')
-                else:
-                    break
-                time.sleep(1) 
-            channel.close()
-            ssh_client.close()
-            print(output)
-            return output
+    except paramiko.ssh_exception.SSHException as ssh_err:
+        return {
+            "message": "مشکلی در برقراری ارتباط به وجود آمده است",
+        }
+    except EOFError:
+        return {
+            "message": "ارتباط قطع شد",
+        }
+    except Exception as e:
+        return {
+            "message": "عدم توانایی در اتصال",
+        }
 
-        except paramiko.ssh_exception.SSHException as ssh_err:
-               return {
-                "message": "مشکلی در برقراری ارتباط به وجود آمده است",
-            }
-        except EOFError:
-            return {
-                "message": "ارتباط قطع شد",
-            }
-        except Exception as e:
-             return {
-                "message": "عدم توانایی در اتصال",
-            }
+
 def run_multiple_commands_separately(host, username, password):
     commandsOutput = []
     for audit in hardeningCheckList:
-        commandsOutput.append(run_cisco_command(host, username, password, audit["command"]))
+        commandsOutput.append(
+            run_cisco_command(host, username, password, audit["command"])
+        )
     return commandsOutput
-
