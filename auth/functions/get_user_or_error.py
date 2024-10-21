@@ -16,5 +16,4 @@ async def get_user_or_error(token: str = Depends(oauth2_scheme)):
 
     if payload is None:
         raise credentials_exception
-    print(token)
     return payload

@@ -16,10 +16,10 @@ def login(data: LoginDto):
     user = userRepo.findByUsername(data.username)
 
     if user is None:
-        raise HTTPException(401, detail="نام کاربری یا رمز عبور اشتباه است")
+        raise HTTPException(400, detail="نام کاربری یا رمز عبور اشتباه است")
 
     if verify_password(data.password, user["password"]) is False:
-        raise HTTPException(401, detail="نام کاربری یا رمز عبور اشتباه است")
+        raise HTTPException(400, detail="نام کاربری یا رمز عبور اشتباه است")
 
     token = create_access_token({"id": user["id"], "username": user["username"]})
 
