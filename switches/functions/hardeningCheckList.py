@@ -19,50 +19,50 @@ hardeningCheckList = [
         "description": "Authenticates users who access privileged EXEC mode when they use the enable command.  ",
         "audit": "Perform the following to determine if AAA authentication enable mode is enabled: hostname#show running-config | incl aaa authentication enable If a result does not return, the feature is not enabled  ",
         "command": "show running-config | incl aaa authentication enable ",
-        "recommendations": "Configure AAA authentication method(s) for enable authentication. hostname(config)#aaa authentication enable default {method1} enable  Impact: Enabling Cisco AAA 'authentication enable' mode is significantly disruptive as former access methods are immediately disabled. Therefore, before enabling  'aaa authentication enable default' mode, the organization should plan and implement authentication logins and passwords, challenges and responses, and token technologies. Default Value: By default, fallback to the local database is disabled.  "
+        "recommendations": "Configure AAA authentication method(s) for enable authentication. hostname(config)#aaa authentication enable default method1 enable  Impact: Enabling Cisco AAA 'authentication enable' mode is significantly disruptive as former access methods are immediately disabled. Therefore, before enabling  'aaa authentication enable default' mode, the organization should plan and implement authentication logins and passwords, challenges and responses, and token technologies. Default Value: By default, fallback to the local database is disabled.  "
     },
-    # {
-    #     "title": "1.1.4 Set 'login authentication for 'line con 0' (Scored) ",
-    #     "description": "Authenticates users who access the router or switch using the serial console port. http://www.cisco.com/en/US/docs/ios-xml/ios/security/a1/sec-cr-a1.html#GUID-4171D649-2973-4707-95F3-9D96971893D0http://www.cisco.com/en/US/docs/ios-xml/ios/security/a1/sec-cr-a1.html#GUID-4171D649-2973-4707-95F3-9D96971893D011    ",
-    #     "audit": "Perform the following to determine if AAA authentication for line login is enabled: If the command does not return a result for each management access method, the feature is not enabled hostname#sh run | sec line | incl login authentication  ",
-    #     "command": "sh run | sec line | incl login authentication ",
-    #     "recommendations": "Configure management lines to require login using the default or a named AAA authentication list. This configuration must be set individually for all line types. hostname(config)#line console 0 hostname(config-line)#login authentication {default | aaa_list_name} Impact: Enabling Cisco AAA 'line login' is significantly disruptive as former access methods are immediately disabled. Therefore, before enabling Cisco AAA 'line login',  the organization should plan and implement authentication logins and passwords, challenges and responses, and token technologies. Default Value: Login authentication is not enabled. Uses the default set with aaa authentication login.  "
-    # },
-    # {
-    #     "title": "1.1.5 Set 'login authentication for 'line tty' (Scored) ",
-    #     "description": "Authenticates users who access the router or switch using the TTY port.  ",
-    #     "audit": "Perform the following to determine if AAA authentication for line login is enabled: If the command does not return a result for each management access method, the feature is not enabled hostname#sh run | sec line | incl login authentication  ",
-    #     "command": "sh run | sec line | incl login authentication ",
-    #     "recommendations": "Configure management lines to require login using the default or a named AAA authentication list. This configuration must be set individually for all line types. hostname(config)#line tty {line-number} [ending-line-number] hostname(config-line)#login authentication {default | aaa_list_name} Impact: Enabling Cisco AAA 'login authentication for line TTY' is significantly disruptive as former access methods are immediately disabled. Therefore, before enabling Cisco AAA 'login authentication for line TTY',  the organization should plan and implement authentication logins and passwords, challenges and responses, and token technologies. Default Value: Login authentication is not enabled. Uses the default set with aaa authentication login.  "
-    # },
-    # {
-    #     "title": "1.1.6 Set 'login authentication for 'line vty' (Scored) ",
-    #     "description": "Authenticates users who access the router or switch remotely through the VTY port.  ",
-    #     "audit": "Perform the following to determine if AAA authentication for line login is enabled: If the command does not return a result for each management access method, the feature is not enabled hostname#sh run | sec line | incl login authentication  ",
-    #     "command": "sh run | sec line | incl login authentication ",
-    #     "recommendations": "Configure management lines to require login using the default or a named AAA authentication list. This configuration must be set individually for all line types. hostname(config)#line vty {line-number} [ending-line-number] hostname(config-line)#login authentication {default | aaa_list_name} Impact: Enabling Cisco AAA 'login authentication for line VTY' is significantly disruptive as former access methods are immediately disabled. Therefore, before enabling Cisco AAA 'login authentication for line VTY', the organization should plan and implement authentication logins and passwords, challenges and responses, and token technologies. Default Value: http://www.cisco.com/en/US/docs/ios-xml/ios/security/d1/sec-cr-k1.html#GUID-297BDF33-4841-441C-83F3-4DA51C3C7284http://www.cisco.com/en/US/docs/ios-xml/ios/security/d1/sec-cr-k1.html#GUID-297BDF33-4841-441C-83F3-4DA51C3C728414   Login authentication is not enabled. Uses the default set with aaa authentication login.  "
-    # },
-    # {
-    #     "title": "1.1.8 Set 'aaa accounting connection' (Scored) ",
-    #     "description": "Provides information about all outbound connections made from the network access server.  ",
-    #     "audit": "Perform the following to determine if aaa accounting for connection is required: Verify a command string result returns hostname#sh run | incl aaa accounting connection  ",
-    #     "command": "sh run | incl aaa accounting connection",
-    #     "recommendations": "16   Configure AAA accounting for connections. hostname(config)#aaa accounting connection {default | list-name | guarantee-first}  {start-stop | stop-only | none} {radius | group group-name} Impact: Implementing aaa accounting connection creates accounting records about connections from the network access server. Organizations should regular monitor these connection records for exceptions, remediate issues, and report findings regularly. Default Value: AAA accounting is not enabled.  "
-    # },
-    # {
-    #     "title": "1.1.9 Set 'aaa accounting exec' (Scored) ",
-    #     "description": "Runs accounting for the EXEC shell session.  ",
-    #     "audit": "Perform the following to determine if aaa accounting for EXEC shell session is required: http://www.cisco.com/en/US/docs/ios-xml/ios/security/a1/sec-cr-a1.html#GUID-0520BCEF-89FB-4505-A5DF-D7F1389F1BBAhttp://www.cisco.com/en/US/docs/ios-xml/ios/security/a1/sec-cr-a1.html#GUID-0520BCEF-89FB-4505-A5DF-D7F1389F1BBA17   Verify a command string result returns hostname#sh run | incl aaa accounting exec  ",
-    #     "command": "sh run | incl aaa accounting exec",
-    #     "recommendations": "Configure AAA accounting for EXEC shell session. hostname(config)#aaa accounting exec {default | list-name | guarantee-first}  {start-stop | stop-only | none} {radius | group group-name} Impact: Enabling aaa accounting exec creates accounting records for the EXEC terminal sessions on the network access server. These records include start and stop times, usernames, and date information. Organizations should regularly monitor these records for exceptions, remediate issues, and report findings. Default Value: AAA accounting is not enabled.  "
-    # },
-    # {
-    #     "title": "1.1.10 Set 'aaa accounting network' (Scored) ",
-    #     "description": "Runs accounting for all network-related service requests.  ",
-    #     "audit": "Perform the following to determine if aaa accounting for connection is required: Verify a command string result returns hostname#sh run | incl aaa accounting network  ",
-    #     "command": "sh run | incl aaa accounting network",
-    #     "recommendations": "Configure AAA accounting for connections. hostname(config)#aaa accounting network {default | list-name | guarantee-first}  {start-stop | stop-only | none} {radius | group group-name} Impact: Implementing aaa accounting network creates accounting records for a method list including ARA, PPP, SLIP, and NCPs sessions. Organizations should regular monitor these records for exceptions, remediate issues, and report findings. Default Value: AAA accounting is not enabled.  "
-    # },
+    {
+        "title": "1.1.4 Set 'login authentication for 'line con 0' (Scored) ",
+        "description": "Authenticates users who access the router or switch using the serial console port. http://www.cisco.com/en/US/docs/ios-xml/ios/security/a1/sec-cr-a1.html#GUID-4171D649-2973-4707-95F3-9D96971893D0http://www.cisco.com/en/US/docs/ios-xml/ios/security/a1/sec-cr-a1.html#GUID-4171D649-2973-4707-95F3-9D96971893D011    ",
+        "audit": "Perform the following to determine if AAA authentication for line login is enabled: If the command does not return a result for each management access method, the feature is not enabled hostname#sh run | sec line | incl login authentication  ",
+        "command": "sh run | sec line | incl login authentication ",
+        "recommendations": "Configure management lines to require login using the default or a named AAA authentication list. This configuration must be set individually for all line types. hostname(config)#line console 0 hostname(config-line)#login authentication {default | aaa_list_name} Impact: Enabling Cisco AAA 'line login' is significantly disruptive as former access methods are immediately disabled. Therefore, before enabling Cisco AAA 'line login',  the organization should plan and implement authentication logins and passwords, challenges and responses, and token technologies. Default Value: Login authentication is not enabled. Uses the default set with aaa authentication login.  "
+    },
+    {
+        "title": "1.1.5 Set 'login authentication for 'line tty' (Scored) ",
+        "description": "Authenticates users who access the router or switch using the TTY port.  ",
+        "audit": "Perform the following to determine if AAA authentication for line login is enabled: If the command does not return a result for each management access method, the feature is not enabled hostname#sh run | sec line | incl login authentication  ",
+        "command": "sh run | sec line | incl login authentication ",
+        "recommendations": "Configure management lines to require login using the default or a named AAA authentication list. This configuration must be set individually for all line types. hostname(config)#line tty {line-number} [ending-line-number] hostname(config-line)#login authentication {default | aaa_list_name} Impact: Enabling Cisco AAA 'login authentication for line TTY' is significantly disruptive as former access methods are immediately disabled. Therefore, before enabling Cisco AAA 'login authentication for line TTY',  the organization should plan and implement authentication logins and passwords, challenges and responses, and token technologies. Default Value: Login authentication is not enabled. Uses the default set with aaa authentication login.  "
+    },
+    {
+        "title": "1.1.6 Set 'login authentication for 'line vty' (Scored) ",
+        "description": "Authenticates users who access the router or switch remotely through the VTY port.  ",
+        "audit": "Perform the following to determine if AAA authentication for line login is enabled: If the command does not return a result for each management access method, the feature is not enabled hostname#sh run | sec line | incl login authentication  ",
+        "command": "sh run | sec line | incl login authentication ",
+        "recommendations": "Configure management lines to require login using the default or a named AAA authentication list. This configuration must be set individually for all line types. hostname(config)#line vty {line-number} [ending-line-number] hostname(config-line)#login authentication {default | aaa_list_name} Impact: Enabling Cisco AAA 'login authentication for line VTY' is significantly disruptive as former access methods are immediately disabled. Therefore, before enabling Cisco AAA 'login authentication for line VTY', the organization should plan and implement authentication logins and passwords, challenges and responses, and token technologies. Default Value: http://www.cisco.com/en/US/docs/ios-xml/ios/security/d1/sec-cr-k1.html#GUID-297BDF33-4841-441C-83F3-4DA51C3C7284http://www.cisco.com/en/US/docs/ios-xml/ios/security/d1/sec-cr-k1.html#GUID-297BDF33-4841-441C-83F3-4DA51C3C728414   Login authentication is not enabled. Uses the default set with aaa authentication login.  "
+    },
+    {
+        "title": "1.1.8 Set 'aaa accounting connection' (Scored) ",
+        "description": "Provides information about all outbound connections made from the network access server.  ",
+        "audit": "Perform the following to determine if aaa accounting for connection is required: Verify a command string result returns hostname#sh run | incl aaa accounting connection  ",
+        "command": "sh run | incl aaa accounting connection",
+        "recommendations": "16   Configure AAA accounting for connections. hostname(config)#aaa accounting connection {default | list-name | guarantee-first}  {start-stop | stop-only | none} {radius | group group-name} Impact: Implementing aaa accounting connection creates accounting records about connections from the network access server. Organizations should regular monitor these connection records for exceptions, remediate issues, and report findings regularly. Default Value: AAA accounting is not enabled.  "
+    },
+    {
+        "title": "1.1.9 Set 'aaa accounting exec' (Scored) ",
+        "description": "Runs accounting for the EXEC shell session.  ",
+        "audit": "Perform the following to determine if aaa accounting for EXEC shell session is required: http://www.cisco.com/en/US/docs/ios-xml/ios/security/a1/sec-cr-a1.html#GUID-0520BCEF-89FB-4505-A5DF-D7F1389F1BBAhttp://www.cisco.com/en/US/docs/ios-xml/ios/security/a1/sec-cr-a1.html#GUID-0520BCEF-89FB-4505-A5DF-D7F1389F1BBA17   Verify a command string result returns hostname#sh run | incl aaa accounting exec  ",
+        "command": "sh run | incl aaa accounting exec",
+        "recommendations": "Configure AAA accounting for EXEC shell session. hostname(config)#aaa accounting exec {default | list-name | guarantee-first}  {start-stop | stop-only | none} {radius | group group-name} Impact: Enabling aaa accounting exec creates accounting records for the EXEC terminal sessions on the network access server. These records include start and stop times, usernames, and date information. Organizations should regularly monitor these records for exceptions, remediate issues, and report findings. Default Value: AAA accounting is not enabled.  "
+    },
+    {
+        "title": "1.1.10 Set 'aaa accounting network' (Scored) ",
+        "description": "Runs accounting for all network-related service requests.  ",
+        "audit": "Perform the following to determine if aaa accounting for connection is required: Verify a command string result returns hostname#sh run | incl aaa accounting network  ",
+        "command": "sh run | incl aaa accounting network",
+        "recommendations": "Configure AAA accounting for connections. hostname(config)#aaa accounting network {default | list-name | guarantee-first}  {start-stop | stop-only | none} {radius | group group-name} Impact: Implementing aaa accounting network creates accounting records for a method list including ARA, PPP, SLIP, and NCPs sessions. Organizations should regular monitor these records for exceptions, remediate issues, and report findings. Default Value: AAA accounting is not enabled.  "
+    },
     # {
     #     "title": "1.1.11 Set 'aaa accounting system' (Scored) ",
     #     "description": "Performs accounting for all system-level events not associated with users, such as reloads.  ",

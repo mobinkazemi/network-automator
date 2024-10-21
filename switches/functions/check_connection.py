@@ -31,19 +31,6 @@ def _connect_ssh(data: Switch, second_try: bool = False) -> bool:
     except Exception as e:
         return {"id": data["id"], "result": False}
 
-
-def checkHardening(data):
-        # try:
-        #     client = paramiko.Transport((thisSwitch["ip"], 22))
-        #     client.connect(
-        #         username=thisSwitch["username"], password=thisSwitch["password"]
-        #     )
-        #     ssh = paramiko.SSHClient()
-        #     ssh._transport = client
-
-        # except Exception as e:
-        #     return False
-        print("test")
 def run_cisco_command(host, username, password, command):
         try:
 
@@ -64,7 +51,7 @@ def run_cisco_command(host, username, password, command):
 
             print(f"Running command: {command}")
             channel.send(command + "\n")
-            time.sleep(2)  
+            time.sleep(1)  
             output = ""
             while True:
                 if channel.recv_ready():

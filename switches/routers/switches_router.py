@@ -191,10 +191,6 @@ def findAll(req: Request, data: checkHardeningDto, payload: dict = Depends(get_u
     
 
     # thisSession = sessionManager.getClient(sessionKey)
-    
-    
-    time.sleep(5)
-
     # resultError = stderr.read().decode()
 
     return {
