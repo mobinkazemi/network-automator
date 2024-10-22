@@ -11,5 +11,6 @@ def hardening_checklist_seeder():
                 hardeningRepo.createOne(item)
         print("Hardening Seeder Executed")
 
-    except:
+    except Exception as e:
+        print(e)
         print("FAILED: Hardening seeder")

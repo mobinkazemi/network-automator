@@ -170,6 +170,7 @@ def findAll(req: Request, payload: dict = Depends(get_user_or_error)):
 
 @router.get("/checkHardening/{id}", response_model=SuccessResponseDto)
 def checkHardening(id: int, req: Request, payload: dict = Depends(get_user_or_error)):
+    allCommands = hardeningRepo.findAll()
     thisSwitch = switchRepo.findById(id)
     if not thisSwitch:
         raise HTTPException(404, detail="سوییچ پیدا نشد")
@@ -185,11 +186,20 @@ def checkHardening(id: int, req: Request, payload: dict = Depends(get_user_or_er
     if not sessionManager.hasClient(sessionKey):
         try:
             commandsOutput = run_multiple_commands_separately(
+
                 thisSwitch["ip"],
                 username=thisSwitch["username"],
                 password=thisSwitch["password"],
+                commands = allCommands , 
+
             )
+            
+            return {
+                "message": "درخواست انجام شد",
+                "data": {"stdout": commandsOutput, "stderr": "resultError"},
+                }
         except Exception as e:
+            print(e)
             raise HTTPException(412, detail="اتصال به سوییچ ناموفق بود")
 
     # thisSession = sessionManager.getClient(sessionKey)

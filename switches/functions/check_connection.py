@@ -3,7 +3,7 @@ import time
 import paramiko
 from switches.model import Switch
 from hardening.hardeningCheckList import hardeningCheckList
-
+import re
 
 async def check_ssh_connection(data: Switch, ttl: int) -> bool:
     try:
@@ -68,8 +68,16 @@ def run_cisco_command(host, username, password, command):
             time.sleep(1)
         channel.close()
         ssh_client.close()
-        print(output)
-        return output
+        # pattern =r"(?:\\r\\n)(.*?)(?:\\r\\n)(.*)(?:\\r\\n)"
+        # outputre = re.search(pattern , output)
+        # output = outputre.group(1)
+        output = output.split("\r\n")
+
+        if len(output) > 2 :
+            return output[1]
+        else:
+            return ""
+        
 
     except paramiko.ssh_exception.SSHException as ssh_err:
         return {
@@ -80,15 +88,37 @@ def run_cisco_command(host, username, password, command):
             "message": "ارتباط قطع شد",
         }
     except Exception as e:
-        return {
-            "message": "عدم توانایی در اتصال",
-        }
+        return e
 
-
-def run_multiple_commands_separately(host, username, password):
+def run_multiple_commands_separately(host, username, password , commands):
+    
     commandsOutput = []
-    for audit in hardeningCheckList:
+    for commandObject in commands:
+        commandOutput = run_cisco_command(host, username, password, commandObject["command"])
+        outputStatus = statusRecognizer(commandOutput, commandObject['regexPattern'])
         commandsOutput.append(
-            run_cisco_command(host, username, password, audit["command"])
+    {
+        "id": commandObject['id'],
+        "title": commandObject['title'],
+        "command": commandObject['command'],
+        "status": outputStatus
+    }
         )
+
+    
     return commandsOutput
+
+
+def check_commands_out(input):
+    print()
+
+def statusRecognizer(commandOutput:str, regex:str):
+    regexMatch = re.search(regex , commandOutput) 
+    print()
+    if commandOutput == "":
+        return False
+    elif regexMatch.group():
+        return False
+    else:
+        return True
+    
